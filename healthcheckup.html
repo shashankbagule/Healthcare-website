@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Health Checkup Form</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script type="module">
+        // Import the Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBKjqLYZSGw4Ez3-Dp7_3I1VHU-zEZqGps",
+            authDomain: "healthcheckup-1b561.firebaseapp.com",
+            databaseURL: "https://healthcheckup-1b561-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "healthcheckup-1b561",
+            storageBucket: "healthcheckup-1b561.firebasestorage.app",
+            messagingSenderId: "380474706164",
+            appId: "1:380474706164:web:b0ea79d2a53834a08736a1",
+            measurementId: "G-YRS4C0LPS8"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        window.submitForm = function() {
+            let name = document.getElementById("name").value;
+            let age = document.getElementById("age").value;
+            let gender = document.getElementById("gender").value;
+            let symptoms = document.getElementById("symptoms").value;
+            let date = document.getElementById("date").value;
+
+            // Push data to Firebase Realtime Database
+            push(ref(database, 'healthcheckup/'), {
+                name: name,
+                age: age,
+                gender: gender,
+                symptoms: symptoms,
+                date: date
+            }).then(() => {
+                alert("Form submitted successfully!");
+            }).catch((error) => {
+                console.error("Error submitting form: ", error);
+            });
+        }
+
+        window.preventPastDates = function() {
+            let today = new Date().toISOString().split('T')[0];
+            document.getElementById("date").setAttribute("min", today);
+        }
+
+        window.downloadForm = function() {
+            const { jsPDF } = window.jspdf;
+            let doc = new jsPDF();
+            doc.text("Health Checkup Form", 20, 20);
+            doc.text(`Name: ${document.getElementById("name").value}`, 20, 40);
+            doc.text(`Age: ${document.getElementById("age").value}`, 20, 50);
+            doc.text(`Gender: ${document.getElementById("gender").value}`, 20, 60);
+            doc.text(`Symptoms: ${document.getElementById("symptoms").value}`, 20, 70);
+            doc.text(`Preferred Date: ${document.getElementById("date").value}`, 20, 80);
+            doc.save("HealthCheckupForm.pdf");
+        }
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: #28a745;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body onload="preventPastDates()">
+    <div class="container">
+        <h2>Advanced Health Checkup Form</h2>
+        <form id="checkupForm" onsubmit="event.preventDefault(); submitForm();">
+            <label for="name">Full Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="age">Age:</label>
+            <input type="number" id="age" name="age" required>
+
+            <label for="gender">Gender:</label>
+            <select id="gender" name="gender" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <label for="symptoms">Symptoms:</label>
+            <input type="text" id="symptoms" name="symptoms" required>
+
+            <label for="date">Preferred Checkup Date:</label>
+            <input type="date" id="date" name="date" required>
+
+            <div class="buttons">
+                <button type="submit">Submit</button>
+                <button type="button" onclick="downloadForm()">Download Form</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
