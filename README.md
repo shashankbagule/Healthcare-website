@@ -8,7 +8,7 @@
 
 <div align="center">
 
-# <p>RapiDoc.com</p>
+# <p>Healthcare.com</p>
 
 
 <i><p>An online platform providing comprehensive information on nearby hospitals and healthcare facilities!</p></i>
