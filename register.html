@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #e3f2fd;
+            margin: 0;
+            flex-direction: column;
+        }
+        .header {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0277bd;
+            margin-bottom: 20px;
+        }
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 350px;
+        }
+        .logo {
+            width: 80px;
+            margin-bottom: 15px;
+        }
+        h2 {
+            color: #0277bd;
+            margin-bottom: 20px;
+        }
+        input {
+            width: 90%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #90caf9;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #0288d1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0277bd;
+        }
+        .toggle-link {
+            margin-top: 10px;
+            color: #01579b;
+            cursor: pointer;
+            display: block;
+        }
+        .message {
+            display: none;
+            margin-top: 10px;
+            font-size: 14px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .success {
+            color: green;
+            background-color: #d4edda;
+        }
+        .error {
+            color: red;
+            background-color: #f8d7da;
+        }
+    </style>
+    <!-- Add Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div class="header">HEALTHCARE</div>
+    <div class="container">
+        <img src="hospital-logo.png" alt="Hospital Logo" class="logo">
+        
+        <div id="loginContainer">
+            <h2>Hospital Login</h2>
+            <form id="loginForm">
+                <input type="text" id="loginUsername" placeholder="Enter Username" required>
+                <input type="password" id="loginPassword" placeholder="Enter Password" required>
+                <button type="submit">Login</button>
+                <p id="loginMessage" class="message"></p>
+            </form>
+            <span class="toggle-link" onclick="toggleForms()">New User? Register</span>
+        </div>
+
+        <div id="registerContainer" style="display: none;">
+            <h2>Hospital Registration</h2>
+            <form id="registerForm">
+                <input type="text" id="registerUsername" placeholder="Choose a Username" required>
+                <input type="email" id="registerEmail" placeholder="Enter Email" required>
+                <input type="password" id="registerPassword" placeholder="Enter Password" required>
+                <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+                <button type="submit">Register</button>
+                <p id="registerMessage" class="message"></p>
+            </form>
+            <span class="toggle-link" onclick="toggleForms()">Already have an account? Login</span>
+        </div>
+    </div>
+
+    <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD3_6-0qqltJ_cFdgXdbUnG2l8zituveBg",
+            authDomain: "login-page-b14a1.firebaseapp.com",
+            databaseURL: "https://login-page-b14a1-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "login-page-b14a1",
+            storageBucket: "login-page-b14a1.firebasestorage.app",
+            messagingSenderId: "129405308112",
+            appId: "1:129405308112:web:2f6a3a8badd67beebf22d5",
+            measurementId: "G-TNDMHWYCBC"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        function toggleForms() {
+            document.getElementById('loginContainer').style.display = 
+                document.getElementById('loginContainer').style.display === 'none' ? 'block' : 'none';
+            document.getElementById('registerContainer').style.display = 
+                document.getElementById('registerContainer').style.display === 'none' ? 'block' : 'none';
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            let username = document.getElementById('registerUsername').value.trim();
+            let email = document.getElementById('registerEmail').value.trim();
+            let password = document.getElementById('registerPassword').value;
+            let confirmPassword = document.getElementById('confirmPassword').value;
+            let registerMessage = document.getElementById('registerMessage');
+
+            if (password !== confirmPassword) {
+                registerMessage.textContent = 'Passwords do not match!';
+                registerMessage.className = 'message error';
+                registerMessage.style.display = 'block';
+                return;
+            }
+
+            const usersRef = database.ref('users/' + username);
+            usersRef.once('value').then((snapshot) => {
+                if (snapshot.exists()) {
+                    registerMessage.textContent = 'Username already exists!';
+                    registerMessage.className = 'message error';
+                    registerMessage.style.display = 'block';
+                } else {
+                    usersRef.set({
+                        email: email,
+                        password: password
+                    }).then(() => {
+                        registerMessage.textContent = 'Registration successful! You can now login.';
+                        registerMessage.className = 'message success';
+                        registerMessage.style.display = 'block';
+
+                        setTimeout(() => {
+                            registerMessage.style.display = 'none';
+                            toggleForms();
+                        }, 2000);
+                    }).catch((error) => {
+                        registerMessage.textContent = 'Registration failed: ' + error.message;
+                        registerMessage.className = 'message error';
+                        registerMessage.style.display = 'block';
+                    });
+                }
+            });
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            let username = document.getElementById('loginUsername').value.trim();
+            let password = document.getElementById('loginPassword').value;
+            let loginMessage = document.getElementById('loginMessage');
+
+            const usersRef = database.ref('users/' + username);
+            usersRef.once('value').then((snapshot) => {
+                if (snapshot.exists() && snapshot.val().password === password) {
+                    loginMessage.textContent = 'Login Successful!';
+                    loginMessage.className = 'message success';
+                    loginMessage.style.display = 'block';
+                    setTimeout(() => {
+                        alert('Welcome to Healthcare System!');
+                        window.location.href = 'https://shashankbagule.github.io/Healthcare-website/';
+                    }, 1000);
+                } else {
+                    loginMessage.textContent = 'Invalid Username or Password!';
+                    loginMessage.className = 'message error';
+                    loginMessage.style.display = 'block';
+                    setTimeout(() => loginMessage.style.display = 'none', 3000);
+                }
+            }).catch((error) => {
+                loginMessage.textContent = 'Login error: ' + error.message;
+                loginMessage.className = 'message error';
+                loginMessage.style.display = 'block';
+                setTimeout(() => loginMessage.style.display = 'none', 3000);
+            });
+        });
+    </script>
+</body>
+</html>
